@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOP 3231 · Lab #3 — Linear &amp; Polynomial Regression</title>
+<style>
+  :root {
+    --navy: #1b2a4a;
+    --blue: #2f5fa8;
+    --blue-light: #eaf1fb;
+    --ink: #1f2430;
+    --muted: #5b6472;
+    --border: #d8dee8;
+    --code-bg: #f4f6fa;
+    --ok: #1f7a4d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #ffffff;
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
+  header.masthead {
+    border-bottom: 3px solid var(--navy);
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+  }
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    color: var(--blue);
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-size: 27px;
+    margin: 0 0 8px;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .meta span:not(:last-child)::after {
+    content: "•";
+    margin: 0 8px;
+    color: var(--border);
+  }
+  h2 {
+    font-size: 18px;
+    color: var(--navy);
+    margin: 40px 0 6px;
+    padding-top: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .step-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    flex: none;
+  }
+  h3 { font-size: 14.5px; color: var(--navy); margin: 20px 0 6px; }
+  p { margin: 8px 0; }
+  .lead {
+    font-size: 15.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  ul, ol { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #b3261e;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 10px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: var(--ink);
+  }
+  pre .comment { color: var(--muted); }
+  .platform-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0 -4px;
+  }
+  .platform-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--blue);
+    background: var(--blue-light);
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-block;
+    margin: 10px 0 4px;
+  }
+  .callout {
+    background: var(--blue-light);
+    border: 1px solid #c9dcf3;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .callout.note::before { content: "Note. "; font-weight: 700; color: var(--navy); }
+  .callout.check::before { content: "Checkpoint. "; font-weight: 700; color: var(--ok); }
+  .callout.scope::before { content: "Scope note. "; font-weight: 700; color: #8a5a00; }
+  .callout.scope { background: #fff8ea; border-color: #f0dca9; }
+  .callout.warn::before { content: "Known quirk. "; font-weight: 700; color: #8a5a00; }
+  .callout.warn { background: #fff8ea; border-color: #f0dca9; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13.5px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--blue-light); color: var(--navy); font-weight: 700; }
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  @media print {
+    body { font-size: 12px; }
+    .page { padding: 0; max-width: none; }
+    pre { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14171f; color: #e4e7ee; }
+    .page { background: #14171f; }
+    header.masthead { border-bottom-color: #4c6fb3; }
+    h1, h2, h3 { color: #9db8ea; }
+    .meta, .lead, footer { color: #9aa2b2; }
+    code { background: #1f2430; color: #ff8a7a; }
+    pre { background: #1a1e28; border-color: #2b3140; }
+    pre code { color: #e4e7ee; }
+    .callout { background: #1c2740; border-color: #2c3f63; }
+    .callout.scope, .callout.warn { background: #2a2416; border-color: #4a3c1a; }
+    th { background: #1c2740; color: #9db8ea; }
+    th, td { border-color: #2b3140; }
+    .platform-label { background: #1c2740; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">MOP 3231 · Machine Learning (Python)</p>
+    <h1>Lab #3 — Linear &amp; Polynomial Regression</h1>
+    <p class="meta">
+      <span>Covers Lectures 3–4: simple &amp; multiple linear regression, model evaluation, polynomial regression</span>
+      <span>Formative — not graded, no Canvas submission</span>
+      <span>Due: __________</span>
+      <span>Instructor: Baubek Ukibassov</span>
+    </p>
+  </header>
+
+  <p class="lead">
+    This is the first lab in the course where you write and run your own machine-learning
+    code. Lectures 3 and 4 built simple linear regression, multiple linear regression,
+    model evaluation (train/test split, K-fold cross-validation, MAE/MSE/RMSE/R²), and
+    polynomial regression on the lecture's own example — cars, engine size, and CO₂
+    emissions. This lab asks you to run the same sequence of steps on a different dataset,
+    so you solve it yourself rather than adapting the lecture's numbers.
+  </p>
+
+  <div class="callout note">
+    This lab is <strong>formative</strong>: it is not one of Task 1–6 and carries no
+    Canvas points. Its purpose is practice before Task 1 (Topics 1–2). Do it anyway —
+    Task 1 assumes you can already do everything in Steps 3–6 below.
+  </div>
+
+  <h2><span class="step-no">1</span>Set up your project</h2>
+  <p>Same pattern as Lab #1 and <code>Test_Lab_0</code>: an isolated environment, a
+  <code>requirements.txt</code>, and a git repository. Replace <code>lastname</code>
+  with your own.</p>
+  <span class="platform-label">macOS / Linux</span>
+  <pre><code><span class="comment"># from wherever you keep coursework</span>
+mkdir lastname_ML_lab_3
+cd lastname_ML_lab_3
+python3 -m venv .lastname_ML_lab_3
+source .lastname_ML_lab_3/bin/activate</code></pre>
+  <span class="platform-label">Windows (PowerShell)</span>
+  <pre><code>mkdir lastname_ML_lab_3
+cd lastname_ML_lab_3
+python -m venv .lastname_ML_lab_3
+.lastname_ML_lab_3\Scripts\Activate.ps1</code></pre>
+
+  <p>This lab needs a plotting library on top of Week 1's <code>numpy</code> /
+  <code>pandas</code> / <code>scikit-learn</code>:</p>
+  <pre><code><span class="comment"># requirements.txt</span>
+numpy==2.0.2
+pandas==2.3.3
+matplotlib==3.9.4
+scikit-learn==1.6.1</code></pre>
+  <pre><code>pip install -r requirements.txt</code></pre>
+
+  <p>Create a <code>data/</code> folder and put the provided
+  <code>cars_fuel_efficiency.csv</code> inside it. Then initialize git as usual:</p>
+  <pre><code>git init
+git branch -M main</code></pre>
+  <pre><code><span class="comment"># .gitignore</span>
+.DS_Store
+.lastname_ML_lab_3/</code></pre>
+  <pre><code>git add .gitignore requirements.txt
+git commit -m "Initial commit"</code></pre>
+
+  <div class="callout warn">
+    On an Apple Silicon Mac, <code>scikit-learn</code> may print
+    <code>RuntimeWarning: divide by zero / overflow / invalid value encountered in
+    matmul</code> when you call <code>.predict()</code>. This is a display-only quirk
+    of NumPy 2.0's Accelerate BLAS backend on that platform — later NumPy releases fix
+    it, but they require Python 3.10+, one version ahead of this course's Python 3.9
+    baseline. It does not change your results (verified against an unaffected
+    environment). Ignore it; do not "fix" it by suppressing warnings globally, since
+    that would also hide warnings that <em>do</em> mean something.
+  </div>
+
+  <h2><span class="step-no">2</span>Load and inspect the data</h2>
+  <p>The dataset: 398 cars (model years 1970–1982), converted to metric units.</p>
+  <table>
+    <thead><tr><th>Column</th><th>Meaning</th><th>Unit</th></tr></thead>
+    <tbody>
+      <tr><td><code>model</code></td><td>Make and model name</td><td>—</td></tr>
+      <tr><td><code>year</code></td><td>Model year</td><td>—</td></tr>
+      <tr><td><code>cylinders</code></td><td>Number of engine cylinders</td><td>count</td></tr>
+      <tr><td><code>engine_litres</code></td><td>Engine displacement</td><td>litres</td></tr>
+      <tr><td><code>power_hp</code></td><td>Engine power</td><td>horsepower</td></tr>
+      <tr><td><code>mass_kg</code></td><td>Vehicle mass</td><td>kilograms</td></tr>
+      <tr><td><code>accel_0_100_s</code></td><td>Time to accelerate</td><td>seconds</td></tr>
+      <tr><td><code>region</code></td><td>Country of origin</td><td>USA / Europe / Japan</td></tr>
+      <tr><td><code>fuel_efficiency_km_per_l</code></td><td><strong>Target.</strong> Fuel efficiency</td><td>km per litre</td></tr>
+    </tbody>
+  </table>
+  <pre><code>import pandas as pd
+
+df = pd.read_csv("data/cars_fuel_efficiency.csv")
+print(df.shape)
+print(df.dtypes)
+print(df.describe())
+print(df.isna().sum())</code></pre>
+  <div class="callout note">
+    <code>power_hp</code> has a handful of missing values. Drop those rows with
+    <code>df.dropna(subset=["power_hp"])</code> before fitting anything, and in your
+    conclusion (Step 7) state how many rows you dropped and in one sentence why that
+    fraction of the dataset is small enough to not worry about further.
+  </div>
+
+  <h2><span class="step-no">3</span>Simple linear regression</h2>
+  <p>Pick the numeric feature most strongly correlated with the target
+  (<code>df.corr()</code>). For that one feature:</p>
+  <ol>
+    <li>Make a scatter plot of the target against the feature.</li>
+    <li>Fit <code>sklearn.linear_model.LinearRegression</code> and print the intercept
+    (θ₀) and slope (θ₁).</li>
+    <li>Draw the fitting line on top of the scatter plot.</li>
+    <li>Write the fitted equation as <code>y = θ0 + θ1 * x</code> with the actual
+    numbers filled in, and use it to predict the fuel efficiency of a car with a value
+    of your choosing for that feature.</li>
+  </ol>
+  <pre><code>from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(X, y)          # X: shape (n, 1); y: shape (n,)
+print(model.intercept_, model.coef_)</code></pre>
+
+  <h2><span class="step-no">4</span>Evaluate your model honestly</h2>
+  <p>Use <code>train_test_split</code> with <code>test_size=0.2</code> and
+  <code>random_state</code> set to the <strong>last 4 digits of your student ID</strong>
+  (write which digits you used). Fit on the training set only.</p>
+  <pre><code>from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=YOUR_STUDENT_ID_LAST_4_DIGITS
+)</code></pre>
+  <p>Report MAE, MSE, RMSE, and R² <strong>separately for the training set and the test
+  set</strong>. Then repeat with 5-fold cross-validation (<code>sklearn.model_selection.KFold</code>
+  or <code>cross_val_score</code>) and report the mean and standard deviation of the
+  test-fold R².</p>
+  <div class="callout check">
+    Your training-set metrics should look better than your test-set metrics. If they
+    don't, or if they're identical, you likely evaluated on the same data you trained
+    on — re-check which arrays you passed to <code>.fit()</code> versus
+    <code>.predict()</code>.
+  </div>
+  <p>In one or two sentences: why does the training-set score alone not tell you
+  whether the model will work on a car it hasn't seen?</p>
+
+  <h2><span class="step-no">5</span>Multiple linear regression</h2>
+  <p>Starting from your best single feature, add the remaining numeric features one
+  group at a time and re-run Step 4's 5-fold cross-validation after each addition. Fill
+  in a table like this one (rows are yours to choose; the shape matters, not these exact
+  groupings):</p>
+  <table>
+    <thead><tr><th>Features used</th><th>Mean test R² (5-fold)</th></tr></thead>
+    <tbody>
+      <tr><td>your single best feature</td><td>&nbsp;</td></tr>
+      <tr><td>+ one more feature</td><td>&nbsp;</td></tr>
+      <tr><td>+ all remaining numeric features</td><td>&nbsp;</td></tr>
+    </tbody>
+  </table>
+  <p>Answer: did test R² improve every time you added a feature? If not, which addition
+  didn't help, and what does that tell you about throwing every column into the model?
+  (This is the same question Lecture 4 asks in its Q&amp;A slides on multiple linear
+  regression — answer it from your own numbers, not from memory of the slide.)</p>
+
+  <h2><span class="step-no">6</span>Polynomial regression</h2>
+  <p>Using your single best feature from Step 3, fit polynomial regression for degrees
+  1 through 5 and record train R² and test R² (5-fold CV) at each degree.</p>
+  <div class="callout scope">
+    Your chosen feature's raw values span a range like 46–230. Raising that to the
+    5th power produces numbers around 6×10¹¹, which makes ordinary least squares
+    numerically unstable — you'll see it as a train R² that <em>drops</em> with degree,
+    which is impossible in exact arithmetic (a degree-5 polynomial can always fit at
+    least as well as a degree-1 one on the same training data). Scale the feature
+    first, inside a pipeline, so the instability doesn't happen:
+    <pre><code>from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.linear_model import LinearRegression
+
+pipe = make_pipeline(
+    StandardScaler(),
+    PolynomialFeatures(degree=degree, include_bias=False),
+    LinearRegression(),
+)</code></pre>
+  </div>
+  <p>Plot train R² and test R² against degree on the same axes. Identify the degree
+  where test R² stops improving, and explain in your own words why train R² keeps
+  climbing past that point while test R² doesn't.</p>
+
+  <h2><span class="step-no">7</span>Conclusion and what to keep</h2>
+  <p>Write 150–250 words (English) answering: which model from Steps 3–6 would you
+  actually use to predict fuel efficiency for a new car, and why? Reference at least one
+  number you computed. There is no single correct choice — the reasoning is what's
+  checked.</p>
+  <p>Keep your notebook or script and this conclusion. Nothing is submitted through
+  Canvas for this lab, but Task 1 (Topics 1–2, due see Canvas) reuses this exact
+  workflow — train/test split, cross-validation, MAE/MSE/RMSE/R² — on a new dataset.</p>
+
+  <div class="callout note">
+    <code>random_state</code> from Step 4 is tied to your student ID on purpose: your
+    tables will not match a classmate's, even on the same dataset. If two submissions
+    show identical numbers, that's not a coincidence.
+  </div>
+
+  <footer>
+    MOP 3231 · Machine Learning (Python) — Narxoz University ·
+    4 contact + 6 SSS + 2 SSSL hours ·
+    Instructor contact: baubek.ukibassov@narxoz.kz
+  </footer>
+
+</div>
+</body>
+</html>
