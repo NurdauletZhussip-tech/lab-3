@@ -9,7 +9,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-STUDENT_ID_LAST_4 = 1234  # replace with your real last 4 digits
+STUDENT_ID_LAST_4 = 2729  # replace with your real last 4 digits
 
 
 def compute_metrics(y_true, y_pred):
@@ -49,7 +49,9 @@ def main():
     # Step 3: simple linear regression
     model = LinearRegression()
     model.fit(X, y)
-    print(f'\nSimple regression: y = {model.intercept_[0]:.6f} + {model.coef_[0][0]:.6f} * x')
+    intercept = float(model.intercept_)
+    coef = float(model.coef_[0])
+    print(f'\nSimple regression: y = {intercept:.6f} + {coef:.6f} * x')
     x_example = 1500.0
     pred_example = model.predict(np.array([[x_example]]))[0]
     print(f'Prediction for {best_feature}={x_example}: {pred_example:.3f} km/l')
@@ -58,7 +60,7 @@ def main():
     plt.scatter(df[best_feature], df['fuel_efficiency_km_per_l'], alpha=0.7)
     x_min, x_max = df[best_feature].min(), df[best_feature].max()
     x_line = np.linspace(x_min, x_max, 200)
-    y_line = model.intercept_[0] + model.coef_[0][0] * x_line
+    y_line = intercept + coef * x_line
     plt.plot(x_line, y_line, color='red', linewidth=2)
     plt.xlabel(best_feature)
     plt.ylabel('fuel_efficiency_km_per_l')
